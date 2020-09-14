@@ -142,7 +142,7 @@ namespace Gravitar
                 if (_FPSDesplayTimer.Elapsed)
                 {
                     _FPSDesplayTimer.Reset();
-                    //System.Diagnostics.Debug.WriteLine("FPS " + _FPSFrames.ToString() + " Average " +
+                    //Core.DebugConsole("FPS " + _FPSFrames.ToString() + " Average " +
                       //  average.ToString());
                 }
 

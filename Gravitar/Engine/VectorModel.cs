@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Linq;
+using System.Diagnostics;
 #endregion
 
 namespace Panther
@@ -13,15 +14,20 @@ namespace Panther
     {
         Camera theCamera;
         FileIO fileIO;
+        List<VectorModel> _children = new List<VectorModel>();
         Matrix localMatrix;
         VertexPositionColor[] pointList;
         Vector3[] vertexArray;
         VertexBuffer vertexBuffer;
         RasterizerState rasterizerState;
         short[] lineListIndices;
-        public float Alpha = 1;
+        Color color = Color.White;
+        float modelScale = 1;
+        float Alpha = 1;
 
         public Vector3[] VertexArray { get => vertexArray; }
+        public Color Color { get => color; set => color = value; }
+        public float ModelScale { get => modelScale; set => modelScale = value; }
 
         public VectorModel (Game game, Camera camera): base(game, camera)
         {
@@ -43,16 +49,55 @@ namespace Panther
             if (Enabled)
             {
                 base.Update(gameTime);
-                Transform();
+
+                if (Moveable)
+                {
+                    UpdateMatrix();
+                }
             }
+        }
+
+        public void UpdateMatrix()
+        {
+            if (_effect == null)
+            {
+                Core.DebugConsole("Effect is null in VectorModel");
+                return;
+            }
+
+            _effect.Projection = _camera.Projection;
+            _effect.View = _camera.View;
+            _effect.DiffuseColor = _diffuseColor;
+            _effect.EmissiveColor = _emissiveColor;
+            _effect.Alpha = Alpha;
+            _world = Matrix.CreateScale(Scale) * RotateMatrix(Rotation) * Matrix.CreateTranslation(Position);
+
+            if (_PO.Child)
+            {
+                foreach (PositionedObject po in _PO.ParentPOs)
+                {
+                    if (!_PO.DirectConnection)
+                    {
+                        _world *= RotateMatrix(po.Rotation) * Matrix.CreateTranslation(po.Position);
+                    }
+                }
+            }
+
+            _effect.World = _world;
         }
 
         public override void Draw(GameTime gameTime)
         {
-            base.Draw(gameTime);
-
-            if (Enabled)
+            if (Enabled && Visible)
             {
+                base.Draw(gameTime);
+
+                if (Effect == null)
+                {
+                    Core.DebugConsole("Effect is null in VectorModel.");
+                    return;
+                }
+
                 foreach (EffectPass pass in Effect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
@@ -69,48 +114,60 @@ namespace Panther
             }
         }
 
-        public void Transform()
-        {
-            // Calculate the mesh transformation by combining translation, rotation, and scaling
-            localMatrix = Matrix.CreateScale(Scale) *
-                Matrix.CreateFromYawPitchRoll(Rotation.X, Rotation.Y, Rotation.Z)
-                * Matrix.CreateTranslation(Position);
-            // Apply to Effect
-            Effect.World = localMatrix;
-            Effect.View = _camera.View;
-            Effect.Projection = _camera.Projection;
-            Effect.EmissiveColor = EmissiveColor;
-            Effect.DiffuseColor = DiffuseColor;
-            Effect.Alpha = Alpha;
-        }
-
         public override void Spawn(Vector3 position)
         {
             base.Spawn(position);
-            Transform();
+            UpdateMatrix();
         }
 
         public override void Spawn(Vector3 position, Vector3 velocity)
         {
             base.Spawn(position, velocity);
-            Transform();
+            UpdateMatrix();
         }
 
         public override void Spawn(Vector3 position, Vector3 rotation, Vector3 velocity)
         {
             base.Spawn(position, rotation, velocity);
-            Transform();
+            UpdateMatrix();
         }
 
         public override void Spawn(Vector3 position, Vector3 rotation, Vector3 rotationVelocity, Vector3 velocity)
         {
             base.Spawn(position, rotation, rotationVelocity, velocity);
-            Transform();
+            UpdateMatrix();
+        }
+
+        public void AddAsChildOf(VectorModel parent)
+        {
+            _PO.AddAsChildOf(parent.PO, true, false, true, false);
+        }
+
+        public void AddAsChildOf(VectorModel parent, bool directConnection)
+        {
+            PO.AddAsChildOf(parent.PO, true, directConnection, true, false);
+        }
+
+        public void AddAsChildOf(VectorModel parent, bool directConnection,
+            bool rotationDependent)
+        {
+            parent._children.Add(this);
+            PO.AddAsChildOf(parent.PO, true, directConnection, rotationDependent, false);
+        }
+
+        public float LoadVectorModel(string name)
+        {
+            return InitializePoints(fileIO.ReadVectorModelFile(name), color, modelScale);
+        }
+
+        public float LoadVectorModel(string name, float scale)
+        {
+            return InitializePoints(fileIO.ReadVectorModelFile(name), color, scale);
         }
 
         public float LoadVectorModel(string name, Color color)
         {
-            return InitializePoints(fileIO.ReadVectorModelFile(name), color, 1);
+            return InitializePoints(fileIO.ReadVectorModelFile(name), color, modelScale);
         }
 
         public float LoadVectorModel(string name, Color color, float scale)
@@ -118,24 +175,20 @@ namespace Panther
             return InitializePoints(fileIO.ReadVectorModelFile(name), color, scale);
         }
 
-        public float LoadVectorModel(string name)
+        public float InitializePoints(Vector3[] pointPositions)
         {
-            return InitializePoints(fileIO.ReadVectorModelFile(name), Color.White, 1);
+            return InitializePoints(pointPositions, color, modelScale);
         }
 
         public float InitializePoints(Vector3[] pointPositions, Color color)
         {
-            return InitializePoints(pointPositions, color, 1);
-        }
-
-        public float InitializePoints(Vector3[] pointPositions)
-        {
-            return InitializePoints(pointPositions, Color.White, 1);
+            return InitializePoints(pointPositions, color, modelScale);
         }
 
         public float InitializePoints(Vector3[] pointPositions, Color color, float scale)
         {
             vertexArray = pointPositions;
+            this.color = color;
 
             if (scale != 1)
             {
@@ -171,7 +224,7 @@ namespace Panther
                 vertexBuffer.SetData<VertexPositionColor>(pointList);
                 InitializeLineList();
                 InitializeEffect();
-                Transform();
+                UpdateMatrix();
             }
 
             for (int i = 0; i < pointPositions.Length; i++)
@@ -191,12 +244,12 @@ namespace Panther
         /// </summary>
         public void InitializeEffect()
         {
-            Effect = new BasicEffect(Core.Graphics);
-            Effect.VertexColorEnabled = true;
-            Effect.TextureEnabled = false;
-            Effect.View = theCamera.View;
-            Effect.Projection = theCamera.Projection;
-            Effect.World = localMatrix;
+            _effect = new BasicEffect(Core.Graphics);
+            _effect.VertexColorEnabled = true;
+            _effect.TextureEnabled = false;
+            _effect.View = theCamera.View;
+            _effect.Projection = theCamera.Projection;
+            _effect.World = localMatrix;
         }
         public void Destroy()
         {

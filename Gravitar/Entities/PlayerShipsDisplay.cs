@@ -29,7 +29,6 @@ namespace Gravitar.Entities
         public override void Initialize()
         {
             base.Initialize();
-
         }
 
         public void LoadContent()
@@ -76,22 +75,23 @@ namespace Gravitar.Entities
                 if (newShip)
                 {
                     playerShipModels.Add(new VectorModel(Game, cameraRef));
-                    playerShipModels.Last().PO.AddAsChildOf(this, false, false, false);
+                    playerShipModels.Last().PO.AddAsChildOf(this);
                     playerShipModels.Last().InitializePoints(Main.instance.ThePlayer.VertexArray,
                         Main.instance.ThePlayer.Color, 1);
+                    playerShipModels.Last().Scale = 1.25f;
                     playerShipModels.Last().PO.Rotation.Z = MathHelper.PiOver2;
                 }
             }
 
-            float line = Core.ScreenHeight - (Main.instance.ThePlayer.PO.Radius * 1.25f);
             float column = -15;
 
             for (int i = 0; i < lives; i++)
             {
                 if (playerShipModels[i].Enabled)
                 {
-                    playerShipModels[i].PO.OriginalPosition = new 
-                        Vector3(column - (i * (Main.instance.ThePlayer.PO.Radius * 1.75f)), line, 0);
+                    playerShipModels[i].PO.Position = new 
+                        Vector3(column - (i * (playerShipModels[0].PO.Radius * 1.75f)),
+                                    Core.ScreenHeight - 1, 0);
                 }
             }
         }

@@ -50,17 +50,17 @@ namespace Panther
             Scale = scale;
             _color = color;
 
-            _HTLine.PO.AddAsChildOf(this, false, false, true);
-            _HBLine.PO.AddAsChildOf(this, false, false, true);
+            _HTLine.PO.AddAsChildOf(this);
+            _HBLine.PO.AddAsChildOf(this);
 
-            _VBLLine.PO.AddAsChildOf(this, false, false, true);
-            _VBRLine.PO.AddAsChildOf(this, false, false, true);
-            _VTLLine.PO.AddAsChildOf(this, false, false, true);
-            _VTRLine.PO.AddAsChildOf(this, false, false, true);
+            _VBLLine.PO.AddAsChildOf(this);
+            _VBRLine.PO.AddAsChildOf(this);
+            _VTLLine.PO.AddAsChildOf(this);
+            _VTRLine.PO.AddAsChildOf(this);
 
-            _MLine.PO.AddAsChildOf(this, false, false, true);
+            _MLine.PO.AddAsChildOf(this);
 
-            _backplate.PO.AddAsChildOf(this, false, false, true);
+            _backplate.PO.AddAsChildOf(this);
 
             float vlinesX = 5.25f;
             float vlineY = 4.75f;

@@ -7,6 +7,7 @@ using System.Linq;
 using System;
 using Panther;
 using Gravitar.Entities;
+using Gravitar.Managers;
 using System.ComponentModel;
 
 public enum GameState
@@ -29,10 +30,12 @@ namespace Gravitar
 {
     public class GameLogic : GameComponent
     {
+        #region Fields
         Camera _camera;
         Player player;
         PlayerShipsDisplay playerShipDisplay;
         PlanetLevel1 planet1;
+        Enemies enemies;
         VectorModel cross;
         Timer highScoreListTimer;
         FileIO fileIO;
@@ -46,6 +49,7 @@ namespace Gravitar
         Vector2 scorePosition = new Vector2();
         Vector2 fuelPosition = new Vector2();
         Vector2 bonusPosition = new Vector2();
+        Vector2 missionCompletePosition = new Vector2();
         Vector2 highScoreListPosition = new Vector2();
         Vector2 highScoreInstructionsPosition = new Vector2();
         Vector2 highScoreLettersPosition = new Vector2();
@@ -63,29 +67,37 @@ namespace Gravitar
         string fuelDisplayText = "Fuel";
         string bonusDisplayText = "Bonus";
         string highScoresText = "High Scores";
+        string missionCompleteText = "Mission complete";
         string[] highScoreInstructions = new string[4];
         string copyRightText = "(c) 1982 Atari inc"; //©
         string gameOverText = "Game Over";
         string fileNameHighScoreList = "HighScoreList.sav";
         char[] highScoreSelectedLetters = new char[3];
         uint score = 0;
-        uint fuel = 0;
+        uint highScore = 0;
         uint bonus = 0;
         uint bonusLifeAmount = 10000;
         uint bonusLifeScore = 0;
         uint wave = 0;
+        uint baseFuel = 10000;
+        int fuel = 0;
         int lives = 0;
         int highScoreSelectedSpace;
         int newHighScorePosition;
         bool displayHighScoreList = true;
-
+        bool missionComplete;
+        #endregion
+        #region Properties
         public GameState CurrentMode { get => _gameMode; set => _gameMode = value; }
         public Player ThePlayer { get => player; }
         public PlanetLevel1 Planet1 { get => planet1; }
+        public Enemies TheEnemies { get => enemies; }
         public uint Score { get => score; }
         public uint Wave { get => wave; set => wave = value; }
         public int Lives { get => lives; }
-
+        public int Fuel { get => fuel;}
+        #endregion
+        #region Constructor
         public GameLogic(Game game, Camera camera) : base(game)
         {
             _camera = camera;
@@ -94,12 +106,14 @@ namespace Gravitar
             player = new Player(game, camera);
             playerShipDisplay = new PlayerShipsDisplay(game, camera);
             planet1 = new PlanetLevel1(game, camera);
+            enemies = new Enemies(game, camera);
 
             highScoreListTimer = new Timer(game);
             fileIO = new FileIO();
 
             game.Components.Add(this);
         }
+        #endregion
         #region Public Methods
         public override void Initialize()
         {
@@ -123,17 +137,20 @@ namespace Gravitar
         {
             player.LoadContent();
             planet1.LoadContent();
+            enemies.LoadContent();
 
             hyper20Font = Game.Content.Load<SpriteFont>("Hyperspace20");
             hyper16Font = Game.Content.Load<SpriteFont>("Hyperspace16");
             hyper8Font = Game.Content.Load<SpriteFont>("Hyperspace8");
-
         }
 
         public void BeginRun()
         {
             player.BeginRun();
             planet1.BeginRun();
+            enemies.BeginRun();
+            playerShipDisplay.BeginRun();
+
             cross.Enabled = false;
             fuelText = "00";
             LoadHighScore();
@@ -147,6 +164,9 @@ namespace Gravitar
             highScoreLettersPosition = new Vector2(Core.WindowWidth / 2.25f, Core.WindowHeight / 1.25f);
             scoreDisplayPosition.X = Core.WindowWidth / 2 - hyper20Font.MeasureString(scoreDisplayText).X / 2;
             fuelDisplayPosition.X = Core.WindowWidth / 2 - hyper20Font.MeasureString(fuelDisplayText).X / 2;
+            missionCompletePosition.X = Core.WindowWidth / 2 - hyper20Font.MeasureString(missionCompleteText).X / 2;
+            missionCompletePosition.Y = fuelDisplayPosition.Y + 
+                hyper20Font.MeasureString(missionCompleteText).Y + 50;
             bonusDisplayPosition.X = Core.WindowWidth - hyper20Font.MeasureString(bonusDisplayText).X - 20;
             bonusDisplayPosition.Y = 50;
 
@@ -178,7 +198,12 @@ namespace Gravitar
         public void Draw()
         {
             Core.SpriteBatch.Begin();
-            Core.SpriteBatch.DrawString(hyper20Font, scoreText, scorePosition, Color.Green);
+
+            if (score > 0)
+            {
+                Core.SpriteBatch.DrawString(hyper20Font, scoreText, scorePosition, Color.Green);
+            }
+
             Core.SpriteBatch.DrawString(hyper20Font, fuelText, fuelPosition, new Color(0, 255, 0));
             Core.SpriteBatch.DrawString(hyper20Font, bonusText, bonusPosition, Color.Green);
             Core.SpriteBatch.DrawString(hyper20Font, scoreDisplayText, scoreDisplayPosition,
@@ -187,6 +212,12 @@ namespace Gravitar
                 Color.Aqua);
             Core.SpriteBatch.DrawString(hyper20Font, bonusDisplayText, bonusDisplayPosition,
                 Color.Aqua);
+
+            if (missionComplete)
+            {
+                Core.SpriteBatch.DrawString(hyper20Font, missionCompleteText, missionCompletePosition,
+                    Color.Aqua);
+            }
 
             if (_gameMode == GameState.Over)
             {
@@ -213,17 +244,24 @@ namespace Gravitar
             Core.SpriteBatch.End();
         }
 
+        public void PlayerFuel(int points)
+        {
+            fuel += points;
+
+            fuelText = fuel.ToString();
+            float ftextlength = hyper20Font.MeasureString(fuelText).X;
+            fuelPosition.X = 500 - ftextlength;
+            fuelPosition.Y = scoreDisplayPosition.Y + 40;
+            fuelDisplayPosition.Y = fuelPosition.Y;
+        }
+
         public void PlayerScore(uint points)
         {
             score += points;
             scoreText = score.ToString();
             float stextlength = hyper20Font.MeasureString(scoreText).X;
-            float ftextlength = hyper20Font.MeasureString(fuelText).X;
             scorePosition.X = 500 - stextlength;
-            fuelPosition.X = 500 - ftextlength;
-            fuelPosition.Y = fuelPosition.Y + 40;
             scoreDisplayPosition.Y = scorePosition.Y;
-            fuelDisplayPosition.Y = fuelPosition.Y;
 
             if (score > bonusLifeScore)
             {
@@ -246,14 +284,16 @@ namespace Gravitar
         {
             ThePlayer.Hit();
             lives--;
+            fuel = (int)baseFuel;
+            PlayerFuel(0);
 
             if (lives < 0)
             {
                 _gameMode = GameState.Over;
 
-                if (score > fuel)
+                if (score > highScore)
                 {
-                    fuel = score;
+                    highScore = score;
                     HighScoreChanged();
                     SaveHighScore();
                 }
@@ -273,7 +313,7 @@ namespace Gravitar
             if (Core.KeyPressed(Keys.End))
             {
                 cross.Enabled = !cross.Enabled;
-                cross.Position = Vector3.Zero;
+                cross.Position = ThePlayer.Position;
             }
 
             if (Core.KeyPressed(Keys.Pause))
@@ -297,7 +337,7 @@ namespace Gravitar
             {
                 if (Core.KeyPressed(Keys.Enter))
                 {
-                    System.Diagnostics.Debug.WriteLine("X: " + cross.X.ToString() +
+                    Core.DebugConsole("X: " + cross.X.ToString() +
                         " " + "Y: " + cross.Y.ToString());
                 }
 
@@ -412,8 +452,7 @@ namespace Gravitar
 
         void HighScoreChanged()
         {
-            fuelText = fuel.ToString();
-            fuelPosition.X = Core.WindowWidth / 2 - hyper16Font.MeasureString(fuelText).X;
+
         }
 
         bool CheckPlayerClear()
@@ -438,22 +477,22 @@ namespace Gravitar
 
         void ScoreZero()
         {
-            scoreText = "00";
-            float textlength = hyper20Font.MeasureString(scoreText).X;
-            PlayerScore(100);
+            fuel = (int)baseFuel;
+            PlayerScore(0);
             PlayerBonus(2000);
+            PlayerFuel(0);
         }
 
         void SaveHighScore()
         {
-            fileIO.WriteStringFile("Score.sav", fuel.ToString());
+            fileIO.WriteStringFile("Score.sav", highScore.ToString());
         }
 
         void LoadHighScore()
         {
             if (fileIO.DoesFileExist("Score.sav"))
             {
-                fuel = uint.Parse(fileIO.ReadStringFile("Score.sav"));
+                highScore = uint.Parse(fileIO.ReadStringFile("Score.sav"));
             }
 
             if (fileIO.DoesFileExist(fileNameHighScoreList))
@@ -463,9 +502,9 @@ namespace Gravitar
 
                 foreach(HighScore high in highScoreArray)
                 {
-                    if (fuel < high.score)
+                    if (highScore < high.score)
                     {
-                        fuel = high.score;
+                        highScore = high.score;
                     }
                 }
             }

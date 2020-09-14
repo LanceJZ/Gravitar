@@ -69,26 +69,26 @@ namespace Panther
             Scale = scale;
             _color = color;
 
-            _HTLine.PO.AddAsChildOf(this, false, false, true);
-            _HBLine.PO.AddAsChildOf(this, false, false, true);
+            _HTLine.PO.AddAsChildOf(this);
+            _HBLine.PO.AddAsChildOf(this);
 
-            _VBLLine.PO.AddAsChildOf(this, false, false, true);
-            _VBRLine.PO.AddAsChildOf(this, false, false, true);
-            _VTLLine.PO.AddAsChildOf(this, false, false, true);
-            _VTRLine.PO.AddAsChildOf(this, false, false, true);
+            _VBLLine.PO.AddAsChildOf(this);
+            _VBRLine.PO.AddAsChildOf(this);
+            _VTLLine.PO.AddAsChildOf(this);
+            _VTRLine.PO.AddAsChildOf(this);
 
-            _MRLine.PO.AddAsChildOf(this, false, false, true);
-            _MLLine.PO.AddAsChildOf(this, false, false, true);
+            _MRLine.PO.AddAsChildOf(this);
+            _MLLine.PO.AddAsChildOf(this);
 
-            _CTLine.PO.AddAsChildOf(this, false, false, true);
-            _CBLine.PO.AddAsChildOf(this, false, false, true);
+            _CTLine.PO.AddAsChildOf(this);
+            _CBLine.PO.AddAsChildOf(this);
 
-            _DTRLine.PO.AddAsChildOf(this, false, false, true);
-            _DTLLine.PO.AddAsChildOf(this, false, false, true);
-            _DBRLine.PO.AddAsChildOf(this, false, false, true);
-            _DBLLine.PO.AddAsChildOf(this, false, false, true);
+            _DTRLine.PO.AddAsChildOf(this);
+            _DTLLine.PO.AddAsChildOf(this);
+            _DBRLine.PO.AddAsChildOf(this);
+            _DBLLine.PO.AddAsChildOf(this);
 
-            _backplate.PO.AddAsChildOf(this, false, false, true);
+            _backplate.PO.AddAsChildOf(this);
 
             float dlinesX = 2.75f;
             float dlinesY = 4.25f;

@@ -236,7 +236,7 @@ namespace Panther
             else
             {
                 //Debug file not found.
-                System.Diagnostics.Debug.WriteLine("File " + fileName + " not found.");
+                Core.DebugConsole("File " + fileName + " not found.");
                 vertRead.Add(Vector3.Zero);
                 vertRead.Add(Vector3.Zero);
                 Main.instance.Game.Exit();

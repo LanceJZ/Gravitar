@@ -21,6 +21,12 @@
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Engine\CollisionBuddy\MatrixExtensions\MatrixExtensions.SharedProject.shproj" />
+    <None Include="Engine\CollisionBuddy\PrimitiveBuddy\PrimitiveBuddy.SharedProject.shproj" />
+    <None Include="Engine\CollisionBuddy\RandomExtensions\RandomExtensions.SharedProject.shproj" />
+    <None Include="Engine\CollisionBuddy\Vector2Extensions\Vector2Extensions.SharedProject.shproj" />
+  </ItemGroup>
+  <ItemGroup>
     <TrimmerRootAssembly Include="Microsoft.Xna.Framework.Content.ContentTypeReader" Visible="false" />
   </ItemGroup>
   <ItemGroup>
@@ -28,13 +34,34 @@
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Managers\" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Update="Content\Models\BunkerBase.vec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Models\BunkerGun.vec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Models\Dot.vec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Models\FuelBeamLeft.vec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Models\FuelBeamRight.vec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Models\FuelDepot.vec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\Models\Gravitar Player Flame.vec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\Models\Gravitar Player Shield.vec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\Models\Gravitar Player Ship.vec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Models\PlanetEnemy.vec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\Models\WorldLevel1.vec">
