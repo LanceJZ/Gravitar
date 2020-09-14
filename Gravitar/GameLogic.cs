@@ -14,7 +14,8 @@ public enum GameState
 {
     PlayerHit,
     Over,
-    InPlay,
+    InPlayOnPlanet,
+    InPlayInSpace,
     Pause,
     HighScore,
     MainMenu
@@ -58,7 +59,7 @@ namespace Gravitar
         Vector2 bonusDisplayPosition = new Vector2();
         Vector2 copyPosition = new Vector2();
         Vector2 gameoverPosition = new Vector2();
-        GameState _gameMode = GameState.InPlay;
+        GameState _gameMode = GameState.InPlayOnPlanet;
         string scoreText;
         string fuelText;
         string bonusText;
@@ -98,15 +99,22 @@ namespace Gravitar
         public int Fuel { get => fuel;}
         #endregion
         #region Constructor
-        public GameLogic(Game game, Camera camera) : base(game)
+        public GameLogic(Game game) : base(game)
         {
-            _camera = camera;
-            cross = new VectorModel(Game, camera);
+            // Screen resolution is 1200 X 900.
+            // Y positive is Up.
+            // (X) positive is to the right when camera is at rotation zero.
+            // Z positive is towards the camera when at rotation zero.
+            // Rotation on object rotates CCW. Zero has front facing X positive. Pi/2 on Y faces Z negative.
+            _camera = new Camera(game, new Vector3(0, 0, 50), new Vector3(0, MathHelper.Pi, 0),
+                Core.Graphics.Viewport.AspectRatio, 1f, 1000);
 
-            player = new Player(game, camera);
-            playerShipDisplay = new PlayerShipsDisplay(game, camera);
-            planet1 = new PlanetLevel1(game, camera);
-            enemies = new Enemies(game, camera);
+            cross = new VectorModel(Game, _camera);
+
+            player = new Player(game, _camera);
+            playerShipDisplay = new PlayerShipsDisplay(game, _camera);
+            planet1 = new PlanetLevel1(game, _camera);
+            enemies = new Enemies(game, _camera);
 
             highScoreListTimer = new Timer(game);
             fileIO = new FileIO();
@@ -152,7 +160,6 @@ namespace Gravitar
             playerShipDisplay.BeginRun();
 
             cross.Enabled = false;
-            fuelText = "00";
             LoadHighScore();
             HighScoreChanged();
             copyPosition = new Vector2(Core.WindowWidth / 2 - hyper8Font.MeasureString(copyRightText).X / 2,
@@ -170,10 +177,7 @@ namespace Gravitar
             bonusDisplayPosition.X = Core.WindowWidth - hyper20Font.MeasureString(bonusDisplayText).X - 20;
             bonusDisplayPosition.Y = 50;
 
-            ScoreZero();
-
-            lives = 4;
-            playerShipDisplay.ShipToDesplay(Lives);
+            ResetGame();
         }
 
         public void UnloadContent()
@@ -187,8 +191,11 @@ namespace Gravitar
 
             GetKeys();
 
-            _camera.X = player.X;
-            _camera.UpdateLookAt();
+            if (_gameMode == GameState.InPlayOnPlanet)
+            {
+                _camera.X = player.X;
+                _camera.UpdateLookAt();
+            }
 
             playerShipDisplay.X = _camera.X;
             playerShipDisplay.Y = _camera.Y;
@@ -283,9 +290,8 @@ namespace Gravitar
         public void PlayerHit()
         {
             ThePlayer.Hit();
+            ThePlayer.Reset();
             lives--;
-            fuel = (int)baseFuel;
-            PlayerFuel(0);
 
             if (lives < 0)
             {
@@ -318,13 +324,13 @@ namespace Gravitar
 
             if (Core.KeyPressed(Keys.Pause))
             {
-                if (CurrentMode == GameState.InPlay)
+                if (CurrentMode == GameState.InPlayOnPlanet)
                 {
                     _gameMode = GameState.Pause;
                 }
                 else if (CurrentMode == GameState.Pause)
                 {
-                    _gameMode = GameState.InPlay;
+                    _gameMode = GameState.InPlayOnPlanet;
                 }
             }
 
@@ -455,28 +461,14 @@ namespace Gravitar
 
         }
 
-        bool CheckPlayerClear()
-        {
-            PositionedObject clearCircle = new PositionedObject(Game);
-            clearCircle.Radius = Core.ScreenHeight / 2.5f;
-
-
-            return true;
-        }
-
         void ResetGame()
         {
-            _gameMode = GameState.InPlay;
+            _gameMode = GameState.InPlayOnPlanet;
             lives = 4;
             score = 0;
-            ScoreZero();
             bonusLifeScore = bonusLifeAmount;
-            ThePlayer.Spawn(Vector3.Zero);
+            ThePlayer.Reset();
             playerShipDisplay.ShipToDesplay(Lives);
-        }
-
-        void ScoreZero()
-        {
             fuel = (int)baseFuel;
             PlayerScore(0);
             PlayerBonus(2000);

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using Gravitar;
 
 namespace Panther
 {
@@ -237,19 +236,10 @@ namespace Panther
             {
                 //Debug file not found.
                 Core.DebugConsole("File " + fileName + " not found.");
-                vertRead.Add(Vector3.Zero);
-                vertRead.Add(Vector3.Zero);
-                Main.instance.Game.Exit();
+                Core.TheGame.Exit();
             }
 
-            Vector3[] verts = new Vector3[vertRead.Count];
-
-            for (int i = 0; i < vertRead.Count; i++)
-            {
-                verts[i] = vertRead[i];
-            }
-
-            return verts;
+            return vertRead.ToArray();
         }
 
         public void Close()

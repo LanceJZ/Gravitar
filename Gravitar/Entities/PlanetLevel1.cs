@@ -17,6 +17,7 @@ namespace Gravitar.Entities
         VectorModel otherSide;
         Bunker[] bunkerList;
         FuelDepot[] fuelDepots;
+        bool zoomStartDone;
         #endregion
         #region Properties
         public FuelDepot[] FuelDepots { get => fuelDepots; }
@@ -40,7 +41,6 @@ namespace Gravitar.Entities
         public override void Initialize()
         {
             base.Initialize();
-            Main.instance.ThePlayer.Gravity = 0.666f;
 
         }
 
@@ -60,8 +60,15 @@ namespace Gravitar.Entities
 
         public void BeginRun()
         {
+            Vector3 camPos = new Vector3(0, 0, 900);
+            cameraRef.MoveTo(Position + camPos);
+            Main.instance.ThePlayer.Y = Core.ScreenHeight * 1.5f;
+            //Main.instance.ThePlayer.Y = Core.ScreenHeight / 1.25f; //Zooms in all the way.
+
             Y = -Core.ScreenHeight + 1;
             otherSide.Y = Y;
+            otherSide.X = otherSide.PO.Radius * 2;
+            otherSide.UpdateMatrix();
 
             bunkerList[0].Position = new Vector3(-4.31f, -15.21f, 0);
             bunkerList[0].PO.Rotation.Z = -MathHelper.PiOver4 + 0.1f;
@@ -75,6 +82,8 @@ namespace Gravitar.Entities
                 bunkerList[i].BeginRun();
                 fuelDepots[i].BeginRun();
             }
+
+            otherSide.Enabled = false;
         }
         #endregion
         #region Update
@@ -82,21 +91,47 @@ namespace Gravitar.Entities
         {
             base.Update(gameTime);
 
-            if (Main.instance.ThePlayer.X > 0)
-            {
-                otherSide.X = otherSide.PO.Radius * 2;
-            }
-            else if (Main.instance.ThePlayer.X < 0)
-            {
-                otherSide.X = -otherSide.PO.Radius * 2;
-            }
-
             if (Main.instance.ThePlayer.Y < -8.75f)
             {
                 if (CheckPlanetCollision())
                 {
                     Core.DebugConsole("Player hit ground as: " + Main.instance.ThePlayer.Position.ToString());
                     Main.instance.ThePlayer.Reset();
+                }
+            }
+
+            if (!zoomStartDone)
+            {
+                cameraRef.MoveTo(new Vector3(cameraRef.X, cameraRef.Y, cameraRef.Z - 10));
+
+                if (cameraRef.Z < 95)
+                {
+                    cameraRef.Z = 95;
+                    cameraRef.Velocity.Z = 0;
+                    Main.instance.ThePlayer.Gravity = 0.666f;
+                    zoomStartDone = true;
+                    otherSide.Enabled = true;
+                    otherSide.UpdateMatrix();
+                }
+            }
+            else
+            {
+                if (Main.instance.ThePlayer.X > 0)
+                {
+                    otherSide.X = otherSide.PO.Radius * 2;
+                }
+                else if (Main.instance.ThePlayer.X < 0)
+                {
+                    otherSide.X = -otherSide.PO.Radius * 2;
+                }
+
+                if (Main.instance.ThePlayer.Y > Core.ScreenHeight / 1.25f)
+                {
+                    cameraRef.MoveTo(new Vector3(cameraRef.X, cameraRef.Y, 95));
+                }
+                else
+                {
+                    cameraRef.MoveTo(new Vector3(cameraRef.X, cameraRef.Y, 50));
                 }
             }
         }

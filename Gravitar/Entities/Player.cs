@@ -120,7 +120,7 @@ namespace Gravitar.Entities
 
         public void Reset()
         {
-            Y = Core.ScreenHeight / 1.25f;
+            //Y = Core.ScreenHeight / 1.25f;
             X = 0;
             PO.Rotation.Z = -MathHelper.PiOver2;
             Acceleration = Vector3.Zero;

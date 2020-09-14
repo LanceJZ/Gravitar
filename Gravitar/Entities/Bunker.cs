@@ -61,7 +61,11 @@ namespace Gravitar.Entities
             if (fireTimer.Elapsed)
             {
                 fireTimer.Reset(Core.RandomMinMax(0.25f, 5f));
-                Fire();
+
+                if (Main.instance.ThePlayer.Y < Core.ScreenHeight)
+                {
+                    Fire();
+                }
             }
 
             if (!gun.Enabled)
@@ -112,7 +116,7 @@ namespace Gravitar.Entities
 
             Vector3 shotV = Core.VelocityFromAngleZ(shotD, 15);
 
-            shotList[shotNumber].Spawn(Position, shotV, 1.25f);
+            shotList[shotNumber].Spawn(Position, shotV, 1.5f);
             gun.Enabled = false;
             gunBlinkTimer.Reset();
         }
@@ -133,9 +137,19 @@ namespace Gravitar.Entities
             {
                 if (PO.CirclesIntersect(shot.PO))
                 {
+                    shot.Enabled = false;
                     Main.instance.PlayerScore(250);
                     Enabled = false;
                     gun.Enabled = false;
+                }
+            }
+
+            foreach(Shot shot in shotList)
+            {
+                if (shot.PO.CirclesIntersect(Main.instance.ThePlayer.PO))
+                {
+                    shot.Enabled = false;
+                    Main.instance.PlayerHit();
                 }
             }
         }
