@@ -52,6 +52,10 @@ namespace Gravitar.Entities
         {
             base.Update(gameTime);
 
+            if (life.Elapsed)
+            {
+                Enabled = false;
+            }
         }
         #endregion
         #region Public Methods

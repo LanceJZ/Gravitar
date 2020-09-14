@@ -90,6 +90,7 @@ namespace Gravitar.Entities
             base.Update(gameTime);
 
             GetKeys();
+            CheckCollision();
 
             PO.Acceleration.Y += -gravity;
 
@@ -202,7 +203,7 @@ namespace Gravitar.Entities
             {
                 if (fuel.Enabled)
                 {
-                    if (fuelBeamL.PO.CirclesIntersect(fuel.PO) || fuelBeamR.PO.CirclesIntersect(fuel.PO))
+                    if (fuelBeamL.PO.CirclesIntersect(fuel.PO) && fuelBeamR.PO.CirclesIntersect(fuel.PO))
                     {
                         Main.instance.PlayerFuel(2500);
                         fuel.Enabled = false;
@@ -237,7 +238,7 @@ namespace Gravitar.Entities
 
         void CheckCollision()
         {
-            // Start at -8.75 world.
+            
         }
         #endregion
     }

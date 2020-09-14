@@ -80,6 +80,7 @@ namespace Gravitar.Entities
                         Main.instance.ThePlayer.Color, 1);
                     playerShipModels.Last().Scale = 1.25f;
                     playerShipModels.Last().PO.Rotation.Z = MathHelper.PiOver2;
+                    playerShipModels.Last().UpdateMatrix();
                 }
             }
 

@@ -15,7 +15,7 @@ namespace Gravitar.Entities
         #region Fields
         Camera cameraRef;
         VectorModel otherSide;
-        Bunker[] bunkers;
+        Bunker[] bunkerList;
         FuelDepot[] fuelDepots;
         #endregion
         #region Properties
@@ -26,12 +26,12 @@ namespace Gravitar.Entities
         {
             cameraRef = camera;
             otherSide = new VectorModel(game, camera);
-            bunkers = new Bunker[2];
+            bunkerList = new Bunker[2];
             fuelDepots = new FuelDepot[2];
 
             for (int i = 0; i < 2; i++)
             {
-                bunkers[i] = new Bunker(game, camera);
+                bunkerList[i] = new Bunker(game, camera);
                 fuelDepots[i] = new FuelDepot(game, camera);
             }
         }
@@ -53,7 +53,7 @@ namespace Gravitar.Entities
 
             for(int i = 0; i < 2; i++)
             {
-                bunkers[i].LoadContent();
+                bunkerList[i].LoadContent();
                 fuelDepots[i].LoadContent();
             }
         }
@@ -63,16 +63,16 @@ namespace Gravitar.Entities
             Y = -Core.ScreenHeight + 1;
             otherSide.Y = Y;
 
-            bunkers[0].Position = new Vector3(-4.31f, -15.21f, 0);
-            bunkers[0].PO.Rotation.Z = -MathHelper.PiOver4 + 0.1f;
-            bunkers[1].Position = new Vector3(23.28f, -11.12f, 0);
-            bunkers[1].PO.Rotation.Z = MathHelper.PiOver4 - 0.135f;
+            bunkerList[0].Position = new Vector3(-4.31f, -15.21f, 0);
+            bunkerList[0].PO.Rotation.Z = -MathHelper.PiOver4 + 0.1f;
+            bunkerList[1].Position = new Vector3(23.28f, -11.12f, 0);
+            bunkerList[1].PO.Rotation.Z = MathHelper.PiOver4 - 0.135f;
             fuelDepots[0].Position = new Vector3(3.3f, Y - 0.175f, 0);
             fuelDepots[1].Position = new Vector3(37.588f, -14.415f, 0);
 
             for(int i = 0; i < 2; i++)
             {
-                bunkers[i].BeginRun();
+                bunkerList[i].BeginRun();
                 fuelDepots[i].BeginRun();
             }
         }
@@ -93,19 +93,18 @@ namespace Gravitar.Entities
 
             if (Main.instance.ThePlayer.Y < -8.75f)
             {
-                if (CheckCollision())
+                if (CheckPlanetCollision())
                 {
                     Core.DebugConsole("Player hit ground as: " + Main.instance.ThePlayer.Position.ToString());
                     Main.instance.ThePlayer.Reset();
                 }
             }
-
         }
         #endregion
         #region Public Methods
         #endregion
         #region Private Methods
-        bool CheckCollision() // Spelled Collision
+        bool CheckPlanetCollision() // Spelled Collision
         {
             Vector2 playerPos = new Vector2(Main.instance.ThePlayer.X, Main.instance.ThePlayer.Y);
             Circle playerCir = new Circle(playerPos, Main.instance.ThePlayer.PO.Radius);

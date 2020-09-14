@@ -71,6 +71,8 @@ namespace Gravitar.Entities
                     gun.Enabled = true;
                 }
             }
+
+            CheckCollision();
         }
         #endregion
         #region Public Methods
@@ -123,6 +125,19 @@ namespace Gravitar.Entities
         float FireAimed()
         {
             return PO.AngleFromVectorsZ(Main.instance.ThePlayer.Position);
+        }
+
+        void CheckCollision()
+        {
+            foreach (Shot shot in Main.instance.ThePlayer.Shots)
+            {
+                if (PO.CirclesIntersect(shot.PO))
+                {
+                    Main.instance.PlayerScore(250);
+                    Enabled = false;
+                    gun.Enabled = false;
+                }
+            }
         }
         #endregion
     }
