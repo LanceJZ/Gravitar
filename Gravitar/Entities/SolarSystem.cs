@@ -9,7 +9,7 @@ using Panther;
 
 namespace Gravitar.Entities
 {
-    public class PlanetEnemy : VectorModel
+    public class SolarSystem : VectorModel
     {
         #region Fields
         Camera cameraRef;
@@ -19,7 +19,7 @@ namespace Gravitar.Entities
 
         #endregion
         #region Constructor
-        public PlanetEnemy(Game game, Camera camera) : base(game, camera)
+        public SolarSystem(Game game, Camera camera) : base(game, camera)
         {
             cameraRef = camera;
 
@@ -29,13 +29,13 @@ namespace Gravitar.Entities
         public override void Initialize()
         {
             base.Initialize();
-            Enabled = false;
+
         }
 
         public new void LoadContent()
         {
             base.LoadContent();
-            LoadVectorModel("PlanetEnemy", Color.Red);
+
         }
 
         public void BeginRun()

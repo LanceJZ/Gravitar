@@ -134,9 +134,9 @@ namespace Gravitar
             float crossSize = 0.5f;
             Vector3[] crossVertex = { new Vector3(crossSize, 0, 0), new Vector3(-crossSize, 0, 0),
                 new Vector3(0, crossSize, 0), new Vector3(0, -crossSize, 0) };
-            cross.InitializePoints(crossVertex);
+            cross.InitializePoints(crossVertex, "Cross");
 
-            // The X: 27.63705 Y: -20.711943
+            // The X: 27.63705 Y: -20.711943 for X and Y at Z zero with camera at 50 and still be visible.
             Core.ScreenWidth = 27.63705f;
             Core.ScreenHeight = 20.711943f;
         }
@@ -310,8 +310,8 @@ namespace Gravitar
             }
 
             playerShipDisplay.ShipToDesplay(Lives);
-            _gameMode = GameState.PlayerHit;
-
+            //_gameMode = GameState.PlayerHit;
+            planet1.PlayerReset();
         }
 
         public void GetKeys()

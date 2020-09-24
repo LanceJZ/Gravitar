@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Linq;
-using System.Diagnostics;
 #endregion
 
 namespace Panther
@@ -19,8 +18,10 @@ namespace Panther
         VertexPositionColor[] pointList;
         Vector3[] vertexArray;
         VertexBuffer vertexBuffer;
+        IndexBuffer indexBuffer;
         RasterizerState rasterizerState;
-        short[] lineListIndices;
+        string name;
+        short[] lineIndices;
         Color color = Color.White;
         float modelScale = 1;
         float Alpha = 1;
@@ -28,6 +29,7 @@ namespace Panther
         public Vector3[] VertexArray { get => vertexArray; }
         public Color Color { get => color; set => color = value; }
         public float ModelScale { get => modelScale; set => modelScale = value; }
+        public string Name { get => name; set => name = value; }
 
         public VectorModel (Game game, Camera camera): base(game, camera)
         {
@@ -61,7 +63,7 @@ namespace Panther
         {
             if (_effect == null)
             {
-                Core.DebugConsole("Effect is null in VectorModel");
+                Core.DebugConsole("Effect is null in VectorModel " + name);
                 return;
             }
 
@@ -94,23 +96,25 @@ namespace Panther
 
                 if (Effect == null)
                 {
-                    Core.DebugConsole("Effect is null in VectorModel.");
+                    Core.DebugConsole("Effect is null in " + name);
                     return;
                 }
+
+                Core.GraphicsDM.GraphicsDevice.SetVertexBuffer(vertexBuffer);
+                Core.GraphicsDM.GraphicsDevice.Indices = indexBuffer;
 
                 foreach (EffectPass pass in Effect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                }
 
-                Core.GraphicsDM.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionColor>(
-                    PrimitiveType.LineList, pointList, //Type, Vertex array for vertices.
-                    0,  // Vertex buffer offset to add to each element of the index buffer.
-                    pointList.Length,  // Number of vertices in pointList.
-                    lineListIndices,  // The index buffer.
-                    0,  // First index element to read.
-                    pointList.Length - 1   // Number of primitives to draw.
-                );
+                    Core.GraphicsDM.GraphicsDevice.DrawIndexedPrimitives
+                        (
+                        PrimitiveType.LineList,
+                        0,
+                        0,
+                        pointList.Length
+                        );
+                }
             }
         }
 
@@ -155,38 +159,58 @@ namespace Panther
             PO.AddAsChildOf(parent.PO, true, directConnection, rotationDependent, false);
         }
 
-        public float LoadVectorModel(string name)
+        public float LoadVectorModel(string fileName)
         {
-            return InitializePoints(fileIO.ReadVectorModelFile(name), color, modelScale);
+            return InitializePoints(fileIO.ReadVectorModelFile(fileName), color, modelScale, fileName);
+        }
+        public float LoadVectorModel(string fileName, string name)
+        {
+            return InitializePoints(fileIO.ReadVectorModelFile(fileName), color, modelScale, name);
         }
 
-        public float LoadVectorModel(string name, float scale)
+        public float LoadVectorModel(string fileName, float scale)
         {
-            return InitializePoints(fileIO.ReadVectorModelFile(name), color, scale);
+            return InitializePoints(fileIO.ReadVectorModelFile(fileName), color, scale, fileName);
         }
 
-        public float LoadVectorModel(string name, Color color)
+        public float LoadVectorModel(string fileName, string name, float scale)
         {
-            return InitializePoints(fileIO.ReadVectorModelFile(name), color, modelScale);
+            return InitializePoints(fileIO.ReadVectorModelFile(fileName), color, scale, name);
         }
 
-        public float LoadVectorModel(string name, Color color, float scale)
+        public float LoadVectorModel(string fileName, Color color)
         {
-            return InitializePoints(fileIO.ReadVectorModelFile(name), color, scale);
+            return InitializePoints(fileIO.ReadVectorModelFile(fileName), color, modelScale, fileName);
         }
 
-        public float InitializePoints(Vector3[] pointPositions)
+        public float LoadVectorModel(string fileName, string name, Color color)
         {
-            return InitializePoints(pointPositions, color, modelScale);
+            return InitializePoints(fileIO.ReadVectorModelFile(fileName), color, modelScale, fileName);
         }
 
-        public float InitializePoints(Vector3[] pointPositions, Color color)
+        public float LoadVectorModel(string fileName, Color color, float scale)
         {
-            return InitializePoints(pointPositions, color, modelScale);
+            return InitializePoints(fileIO.ReadVectorModelFile(fileName), color, scale, fileName);
         }
 
-        public float InitializePoints(Vector3[] pointPositions, Color color, float scale)
+        public float LoadVectorModel(string fileName, string name, Color color, float scale)
         {
+            return InitializePoints(fileIO.ReadVectorModelFile(fileName), color, scale, name);
+        }
+
+        public float InitializePoints(Vector3[] pointPositions, string name)
+        {
+            return InitializePoints(pointPositions, color, modelScale, name);
+        }
+
+        public float InitializePoints(Vector3[] pointPositions, Color color, string name)
+        {
+            return InitializePoints(pointPositions, color, modelScale, name);
+        }
+
+        public float InitializePoints(Vector3[] pointPositions, Color color, float scale, string name)
+        {
+            this.name = name;
             vertexArray = pointPositions;
             this.color = color;
 
@@ -221,7 +245,8 @@ namespace Panther
                     pointPositions.Length, BufferUsage.None);
 
                 // Set the vertex buffer data to the array of vertices.
-                vertexBuffer.SetData<VertexPositionColor>(pointList);
+                vertexBuffer.SetData(pointList);
+
                 InitializeLineList();
                 InitializeEffect();
                 UpdateMatrix();
@@ -261,14 +286,18 @@ namespace Panther
         void InitializeLineList()
         {
             // Initialize an array of indices of type short.
-            lineListIndices = new short[(pointList.Length * 2) - 2];
+            lineIndices = new short[(pointList.Length * 2) - 2];
 
             // Populate the array with references to indices in the vertex buffer
             for (int i = 0; i < pointList.Length - 1; i++)
             {
-                lineListIndices[i * 2] = (short)(i);
-                lineListIndices[(i * 2) + 1] = (short)(i + 1);
+                lineIndices[i * 2] = (short)(i);
+                lineIndices[(i * 2) + 1] = (short)(i + 1);
             }
+
+            indexBuffer = new IndexBuffer(Core.GraphicsDM.GraphicsDevice, typeof(short),
+                lineIndices.Length, BufferUsage.WriteOnly);
+            indexBuffer.SetData(lineIndices);
         }
         #endregion
     }

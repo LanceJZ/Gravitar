@@ -60,7 +60,7 @@ namespace Gravitar.Entities
 
             if (fireTimer.Elapsed)
             {
-                fireTimer.Reset(Core.RandomMinMax(0.25f, 5f));
+                fireTimer.Reset(Core.RandomMinMax(0.15f, 5f));
 
                 if (Main.instance.ThePlayer.Y < Core.ScreenHeight)
                 {
@@ -68,11 +68,11 @@ namespace Gravitar.Entities
                 }
             }
 
-            if (!gun.Enabled)
+            if (!gun.Visible)
             {
                 if (gunBlinkTimer.Elapsed)
                 {
-                    gun.Enabled = true;
+                    gun.Visible = true;
                 }
             }
 
@@ -100,7 +100,7 @@ namespace Gravitar.Entities
             if (spawnNew)
             {
                 shotList.Add(new Shot(Game, cameraRef));
-                shotList.Last().InitializePoints(shotVerticies);
+                shotList.Last().InitializePoints(shotVerticies, Color.Red, "Bunker Shot");
             }
 
             float shotD = 0;
@@ -117,7 +117,7 @@ namespace Gravitar.Entities
             Vector3 shotV = Core.VelocityFromAngleZ(shotD, 15);
 
             shotList[shotNumber].Spawn(Position, shotV, 1.5f);
-            gun.Enabled = false;
+            gun.Visible = false;
             gunBlinkTimer.Reset();
         }
 
@@ -133,25 +133,36 @@ namespace Gravitar.Entities
 
         void CheckCollision()
         {
+            if (CirclesIntersect(Main.instance.ThePlayer))
+            {
+                Main.instance.PlayerHit();
+                Explode();
+            }
+
             foreach (Shot shot in Main.instance.ThePlayer.Shots)
             {
-                if (PO.CirclesIntersect(shot.PO))
+                if (CirclesIntersect(shot))
                 {
-                    shot.Enabled = false;
                     Main.instance.PlayerScore(250);
-                    Enabled = false;
-                    gun.Enabled = false;
+                    shot.Enabled = false;
+                    Explode();
                 }
             }
 
             foreach(Shot shot in shotList)
             {
-                if (shot.PO.CirclesIntersect(Main.instance.ThePlayer.PO))
+                if (shot.CirclesIntersect(Main.instance.ThePlayer))
                 {
                     shot.Enabled = false;
                     Main.instance.PlayerHit();
                 }
             }
+        }
+
+        void Explode()
+        {
+            Enabled = false;
+            gun.Enabled = false;
         }
         #endregion
     }

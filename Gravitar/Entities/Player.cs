@@ -120,8 +120,6 @@ namespace Gravitar.Entities
 
         public void Reset()
         {
-            //Y = Core.ScreenHeight / 1.25f;
-            X = 0;
             PO.Rotation.Z = -MathHelper.PiOver2;
             Acceleration = Vector3.Zero;
             Velocity = Vector3.Zero;
@@ -203,7 +201,7 @@ namespace Gravitar.Entities
             {
                 if (fuel.Enabled)
                 {
-                    if (fuelBeamL.PO.CirclesIntersect(fuel.PO) && fuelBeamR.PO.CirclesIntersect(fuel.PO))
+                    if (fuelBeamL.CirclesIntersect(fuel) && fuelBeamR.CirclesIntersect(fuel))
                     {
                         Main.instance.PlayerFuel(2500);
                         fuel.Enabled = false;

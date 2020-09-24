@@ -77,7 +77,7 @@ namespace Gravitar.Entities
                     playerShipModels.Add(new VectorModel(Game, cameraRef));
                     playerShipModels.Last().PO.AddAsChildOf(this);
                     playerShipModels.Last().InitializePoints(Main.instance.ThePlayer.VertexArray,
-                        Main.instance.ThePlayer.Color, 1);
+                        Main.instance.ThePlayer.Color, 1, "Player Ship Display");
                     playerShipModels.Last().Scale = 1.25f;
                     playerShipModels.Last().PO.Rotation.Z = MathHelper.PiOver2;
                     playerShipModels.Last().UpdateMatrix();

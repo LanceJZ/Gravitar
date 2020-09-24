@@ -15,7 +15,8 @@ namespace Gravitar.Entities
         #region Fields
         Camera cameraRef;
         VectorModel otherSide;
-        Bunker[] bunkerList;
+        Bunker[] bunkerList = new Bunker[2];
+        Rammer[] planetEnemies = new Rammer[2];
         FuelDepot[] fuelDepots;
         bool zoomStartDone;
         #endregion
@@ -27,13 +28,13 @@ namespace Gravitar.Entities
         {
             cameraRef = camera;
             otherSide = new VectorModel(game, camera);
-            bunkerList = new Bunker[2];
             fuelDepots = new FuelDepot[2];
 
             for (int i = 0; i < 2; i++)
             {
                 bunkerList[i] = new Bunker(game, camera);
                 fuelDepots[i] = new FuelDepot(game, camera);
+                planetEnemies[i] = new Rammer(game, camera);
             }
         }
         #endregion
@@ -49,12 +50,13 @@ namespace Gravitar.Entities
             base.LoadContent();
 
             LoadVectorModel("WorldLevel1", Color.Green * 2, 10.0f);
-            otherSide.InitializePoints(VertexArray, Color);
+            otherSide.InitializePoints(VertexArray, Color, "Planet Other Side");
 
             for(int i = 0; i < 2; i++)
             {
                 bunkerList[i].LoadContent();
                 fuelDepots[i].LoadContent();
+                planetEnemies[i].LoadContent();
             }
         }
 
@@ -79,8 +81,11 @@ namespace Gravitar.Entities
 
             for(int i = 0; i < 2; i++)
             {
+                planetEnemies[i].Y = Core.ScreenHeight / 1.25f;
+                planetEnemies[i].X = -PO.Radius + (i * (PO.Radius * 2));
                 bunkerList[i].BeginRun();
                 fuelDepots[i].BeginRun();
+                planetEnemies[i].BeginRun();
             }
 
             otherSide.Enabled = false;
@@ -96,7 +101,7 @@ namespace Gravitar.Entities
                 if (CheckPlanetCollision())
                 {
                     Core.DebugConsole("Player hit ground as: " + Main.instance.ThePlayer.Position.ToString());
-                    Main.instance.ThePlayer.Reset();
+                    Main.instance.PlayerHit();
                 }
             }
 
@@ -112,6 +117,12 @@ namespace Gravitar.Entities
                     zoomStartDone = true;
                     otherSide.Enabled = true;
                     otherSide.UpdateMatrix();
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        planetEnemies[i].Enabled = true;
+                        planetEnemies[i].UpdateMatrix();
+                    }
                 }
             }
             else
@@ -137,6 +148,11 @@ namespace Gravitar.Entities
         }
         #endregion
         #region Public Methods
+        public void PlayerReset()
+        {
+            Main.instance.ThePlayer.Y = Core.ScreenHeight * 1.25f;
+            Main.instance.ThePlayer.X = 0;
+        }
         #endregion
         #region Private Methods
         bool CheckPlanetCollision() // Spelled Collision

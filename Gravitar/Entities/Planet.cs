@@ -1,30 +1,27 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
 using System.Collections.Generic;
 using System.Linq;
 using System;
 using Panther;
-using Gravitar.Entities;
 
-namespace Gravitar.Managers
+namespace Gravitar.Entities
 {
-    public class Enemies : GameComponent
+    public class Planet : VectorModel
     {
         #region Fields
         Camera cameraRef;
+
         #endregion
         #region Properties
 
         #endregion
         #region Constructor
-        public Enemies(Game game, Camera camera) : base(game)
+        public Planet(Game game, Camera camera) : base(game, camera)
         {
             cameraRef = camera;
 
-
-            game.Components.Add(this);
         }
         #endregion
         #region Initialize-Load-BeginRun
@@ -34,8 +31,9 @@ namespace Gravitar.Managers
 
         }
 
-        public void LoadContent()
+        public new void LoadContent()
         {
+            base.LoadContent();
 
         }
 
@@ -52,10 +50,6 @@ namespace Gravitar.Managers
         }
         #endregion
         #region Public Methods
-        public void SpawnPlanetEnemies() //For when player enters planet.
-        {
-
-        }
         #endregion
         #region Private Methods
         #endregion
